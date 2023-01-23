@@ -4,8 +4,8 @@ import { postMovie, getMovies, updateMovie, deleteMovie} from "../controllers/mo
 const movizerRoutes = Router()
 
 movizerRoutes.post("/post-movie", postMovie)
-movizerRoutes.get("/get-movies?platform?gender", getMovies)
-movizerRoutes.put("udape-movie", updateMovie)
+movizerRoutes.get("/get-movies", getMovies)
+movizerRoutes.put("/update-movie", updateMovie)
 movizerRoutes.delete("/movie/:movieId", deleteMovie)
 
 export default movizerRoutes

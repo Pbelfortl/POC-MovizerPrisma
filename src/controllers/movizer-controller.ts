@@ -7,7 +7,7 @@ export async function postMovie(req: Request, res: Response) {
 
     try {
 
-        await connection.query(`INSERT INTO movie (name, platform, gender, status) VALUES ($1, $2, $3)`, [name, platform, gender])
+        await connection.query(`INSERT INTO movie (name, platform, gender) VALUES ($1, $2, $3)`, [name, platform, gender])
         res.sendStatus(201)
 
     } catch (err) {
@@ -20,34 +20,52 @@ export async function postMovie(req: Request, res: Response) {
 export async function getMovies(req: Request, res: Response) {
 
     const platform = req.query.platform
-    const gender = req.query.platform
+    const gender = req.query.gender
 
     try {
 
         if (platform && gender) {
-
-            const movies = await connection.query(`SELECT * FROM movie WHERE platform = $1 AND gender = $2`, [platform, gender])
+            const movies = (await connection.query(`SELECT 
+                movie.id, movie.name as name, platforms.name as platform, genders.name as gender, movie.status, movie.note
+                FROM movie
+                JOIN platforms ON movie.platform = platforms.id
+                JOIN genders ON genders.id = movie.gender
+                WHERE platform = $1 AND gender = $2`, [platform, gender])).rows
             return res.status(200).send(movies)
         }
 
         if (platform) {
-
-            const movies = await connection.query(`SELECT * FROM movie WHERE platform = $1`, [platform])
+            const movies = (await connection.query(`SELECT 
+                movie.id, movie.name as name, platforms.name as platform, genders.name as gender, movie.status, movie.note
+                FROM movie
+                JOIN platforms ON movie.platform = platforms.id
+                JOIN genders ON genders.id = movie.gender
+                WHERE platform = $1`, [platform])).rows
             return res.status(200).send(movies)
         }
 
         if (gender) {
 
-            const movies = await connection.query(`SELECT * FROM movie WHERE gender = $1`, [gender])
+            const movies = (await connection.query(`SELECT 
+            movie.id, movie.name as name, platforms.name as platform, genders.name as gender, movie.status, movie.note
+            FROM movie
+            JOIN platforms ON movie.platform = platforms.id
+            JOIN genders ON genders.id = movie.gender
+            WHERE gender = $1`, [gender])).rows
             return res.status(200).send(movies)
         }
 
-        const movies = (await connection.query(`SELECT * FROM movie`)).rows
+        const movies = (await connection.query(`SELECT  
+            movie.id, movie.name as name, platforms.name as platform, genders.name as gender, movie.status, movie.note
+            FROM movie
+            JOIN platforms ON platforms.id = movie.platform
+            JOIN genders ON genders.id = movie.gender`)).rows
 
         res.status(200).send(movies)
 
     } catch (err) {
-
+        console.log(err)
+        res.sendStatus(500)
     }
 }
 
