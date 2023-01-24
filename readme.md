@@ -71,5 +71,5 @@ _ÌNDICE DOS GÊNEROS_
     4 documentário
     5 drama
     6 romance
-    6 suspense
-    7 terror
+    7 suspense
+    8 terror
