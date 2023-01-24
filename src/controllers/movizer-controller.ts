@@ -75,7 +75,7 @@ export async function updateMovie(req: Request, res: Response) {
 
     try {
 
-        await connection.query(`UPDATE movie SET status = true, note = $2 WHERE name = $1`, [name, note])
+        await connection.query(`UPDATE movie SET status = true, note = $2 WHERE id = $1`, [id, note])
         res.sendStatus(200)
 
     } catch (err) {
