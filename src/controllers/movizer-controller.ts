@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { connection } from "../app.js";
+import prisma from "../database.js";
 
 export async function postMovie(req: Request, res: Response) {
 
@@ -7,7 +7,13 @@ export async function postMovie(req: Request, res: Response) {
 
     try {
 
-        await connection.query(`INSERT INTO movie (name, platform, gender) VALUES ($1, $2, $3)`, [name, platform, gender])
+        await prisma.movie.create({
+            data: {
+                name,
+                platform,
+                gender
+            }
+        })
         res.sendStatus(201)
 
     } catch (err) {
@@ -25,41 +31,52 @@ export async function getMovies(req: Request, res: Response) {
     try {
 
         if (platform && gender) {
-            const movies = (await connection.query(`SELECT 
-                movie.id, movie.name as name, platforms.name as platform, genders.name as gender, movie.status, movie.note
-                FROM movie
-                JOIN platforms ON movie.platform = platforms.id
-                JOIN genders ON genders.id = movie.gender
-                WHERE platform = $1 AND gender = $2`, [platform, gender])).rows
+            const movies = await prisma.movie.findMany({
+                where:{
+                    platform: Number(platform),
+                    gender: Number(gender)
+                },
+                include: {
+                    genders: true,
+                    platforms: true
+                }
+            })
             return res.status(200).send(movies)
         }
 
         if (platform) {
-            const movies = (await connection.query(`SELECT 
-                movie.id, movie.name as name, platforms.name as platform, genders.name as gender, movie.status, movie.note
-                FROM movie
-                JOIN platforms ON movie.platform = platforms.id
-                JOIN genders ON genders.id = movie.gender
-                WHERE platform = $1`, [platform])).rows
+            const movies = await prisma.movie.findMany({
+                where: {
+                    platform: Number(platform)
+                },
+                include: {
+                    genders: true,
+                    platforms: true
+                }
+            })
             return res.status(200).send(movies)
         }
 
         if (gender) {
 
-            const movies = (await connection.query(`SELECT 
-            movie.id, movie.name as name, platforms.name as platform, genders.name as gender, movie.status, movie.note
-            FROM movie
-            JOIN platforms ON movie.platform = platforms.id
-            JOIN genders ON genders.id = movie.gender
-            WHERE gender = $1`, [gender])).rows
+            const movies = await prisma.movie.findMany({
+                where: {
+                    gender: Number(gender)
+                },
+                include: {
+                    genders: true,
+                    platforms: true
+                }
+            })
             return res.status(200).send(movies)
         }
 
-        const movies = (await connection.query(`SELECT  
-            movie.id, movie.name as name, platforms.name as platform, genders.name as gender, movie.status, movie.note
-            FROM movie
-            JOIN platforms ON platforms.id = movie.platform
-            JOIN genders ON genders.id = movie.gender`)).rows
+        const movies = (await prisma.movie.findMany({
+            include: {
+                genders: true,
+                platforms: true
+            }
+        }) )
 
         res.status(200).send(movies)
 
@@ -75,7 +92,15 @@ export async function updateMovie(req: Request, res: Response) {
 
     try {
 
-        await connection.query(`UPDATE movie SET status = true, note = $2 WHERE id = $1`, [id, note])
+        await prisma.movie.update({
+            where: {
+                id: id
+            },
+            data: {
+                note: note
+            }
+        })
+
         res.sendStatus(200)
 
     } catch (err) {
@@ -90,8 +115,11 @@ export async function deleteMovie(req: Request, res: Response) {
 
     try {
 
-        await connection.query(`DELETE FROM movie WHERE id = $1`, [movieId])
-
+        await prisma.movie.delete({
+            where:{
+                id: movieId
+            }
+        })
 
     } catch (err) {
 

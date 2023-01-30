@@ -1,0 +1,31 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model genders {
+  id    Int     @id(map: "genders_pk") @default(autoincrement())
+  name  String  @unique
+  movie movie[]
+}
+
+model movie {
+  id        Int       @id(map: "movie_pk") @default(autoincrement())
+  name      String
+  platform  Int
+  gender    Int
+  status    Boolean   @default(false)
+  note      String?
+  platforms platforms @relation(fields: [platform], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "Movie_fk0")
+  genders   genders   @relation(fields: [gender], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "Movie_fk1")
+}
+
+model platforms {
+  id    Int     @id(map: "platforms_pk") @default(autoincrement())
+  name  String  @unique
+  movie movie[]
+}
